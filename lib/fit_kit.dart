@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:fit_kit/fit_data.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class FitKit {
