@@ -1,9 +1,7 @@
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:fit_kit/fit_kit.dart';
+import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,7 +30,8 @@ class _MyAppState extends State<MyApp> {
           DateTime.now(),
         );
 
-        final result = "Type $type = ${response.length} ${response.map((data) => data.value)}\n\n\n";
+        final result =
+            "Type $type = ${response.length} ${response.map((data) => data.value)}\n\n\n";
         results += result;
         debugPrint(result);
       }
@@ -54,9 +53,15 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: SingleChildScrollView(
-            child: Text('$_results'),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Text('$_results'),
+              FlatButton(
+                onPressed: () => readAll(),
+                child: Text("Reload"),
+              ),
+            ],
           ),
         ),
       ),

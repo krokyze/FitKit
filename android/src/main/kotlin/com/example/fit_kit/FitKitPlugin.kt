@@ -6,7 +6,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataPoint
-import com.google.android.gms.fitness.data.DataSet
 import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
@@ -18,6 +17,22 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.concurrent.TimeUnit
 
 class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
+
+    interface OAuthPermissionsListener {
+        fun onOAuthPermissionsResult(resultCode: Int)
+    }
+
+    private val oAuthPermissionListeners = mutableListOf<OAuthPermissionsListener>()
+
+    init {
+        registrar.addActivityResultListener { requestCode, resultCode, _ ->
+            if (requestCode == GOOGLE_FIT_REQUEST_CODE) {
+                oAuthPermissionListeners.forEach { it.onOAuthPermissionsResult(resultCode) }
+                return@addActivityResultListener true
+            }
+            return@addActivityResultListener false
+        }
+    }
 
     companion object {
         private const val TAG = "FitKit"
@@ -51,17 +66,11 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
         if (hasOAuthPermission(fitnessOptions)) {
             readSample(request, result)
         } else {
-            registrar.addActivityResultListener { requestCode, resultCode, _ ->
-                if (requestCode == GOOGLE_FIT_REQUEST_CODE) {
-                    if (resultCode == Activity.RESULT_OK) {
-                        readSample(request, result)
-                    } else {
-                        result.error(TAG, "User denied permission access", null)
-                    }
-                    return@addActivityResultListener true
-                }
-                return@addActivityResultListener false
-            }
+            addOAuthPermissionListener({
+                readSample(request, result)
+            }, {
+                result.error(TAG, "User denied permission access", null)
+            })
             requestOAuthPermission(fitnessOptions)
         }
     }
@@ -76,6 +85,19 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 GOOGLE_FIT_REQUEST_CODE,
                 GoogleSignIn.getLastSignedInAccount(registrar.context()),
                 fitnessOptions)
+    }
+
+    private fun addOAuthPermissionListener(onSuccess: () -> Unit, onError: () -> Unit) {
+        oAuthPermissionListeners.add(object : OAuthPermissionsListener {
+            override fun onOAuthPermissionsResult(resultCode: Int) {
+                if (resultCode == Activity.RESULT_OK) {
+                    onSuccess()
+                } else {
+                    onError()
+                }
+                oAuthPermissionListeners.remove(this)
+            }
+        })
     }
 
     private fun readSample(request: ReadRequest, result: Result) {
