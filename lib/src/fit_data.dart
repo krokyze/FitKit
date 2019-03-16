@@ -1,3 +1,5 @@
+part of fit_kit;
+
 class FitData {
   final num value;
   final DateTime dateFrom;
