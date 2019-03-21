@@ -46,48 +46,57 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        if (call.method == "read") {
-            try {
+        when (call.method) {
+            "requestPermissions" -> try {
+                val request = PermissionsRequest.fromCall(call)
+                requestPermissions(request, result)
+            } catch (e: Throwable) {
+                result.error(TAG, e.message, null)
+            }
+            "read" -> try {
                 val request = ReadRequest.fromCall(call)
                 read(request, result)
             } catch (e: Throwable) {
                 result.error(TAG, e.message, null)
             }
-        } else {
-            result.notImplemented()
+            else -> result.notImplemented()
         }
+    }
+
+    private fun requestPermissions(request: PermissionsRequest, result: Result) {
+        val options = FitnessOptions.builder()
+                .also { builder ->
+                    request.dataTypes.forEach { dataType ->
+                        builder.addDataType(dataType)
+                    }
+                }
+                .build()
+
+        requestOAuthPermissions(options, {
+            result.success(true)
+        }, {
+            result.success(false)
+        })
     }
 
     private fun read(request: ReadRequest, result: Result) {
-        val fitnessOptions = FitnessOptions.builder()
+        val options = FitnessOptions.builder()
                 .addDataType(request.dataType)
                 .build()
 
-        if (hasOAuthPermission(fitnessOptions)) {
+        requestOAuthPermissions(options, {
             readSample(request, result)
-        } else {
-            addOAuthPermissionListener({
-                readSample(request, result)
-            }, {
-                result.error(TAG, "User denied permission access", null)
-            })
-            requestOAuthPermission(fitnessOptions)
+        }, {
+            result.error(TAG, "User denied permission access", null)
+        })
+    }
+
+    private fun requestOAuthPermissions(fitnessOptions: FitnessOptions, onSuccess: () -> Unit, onError: () -> Unit) {
+        if (hasOAuthPermission(fitnessOptions)) {
+            onSuccess()
+            return
         }
-    }
 
-    private fun hasOAuthPermission(fitnessOptions: FitnessOptions): Boolean {
-        return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(registrar.context()), fitnessOptions)
-    }
-
-    private fun requestOAuthPermission(fitnessOptions: FitnessOptions) {
-        GoogleSignIn.requestPermissions(
-                registrar.activity(),
-                GOOGLE_FIT_REQUEST_CODE,
-                GoogleSignIn.getLastSignedInAccount(registrar.context()),
-                fitnessOptions)
-    }
-
-    private fun addOAuthPermissionListener(onSuccess: () -> Unit, onError: () -> Unit) {
         oAuthPermissionListeners.add(object : OAuthPermissionsListener {
             override fun onOAuthPermissionsResult(resultCode: Int) {
                 if (resultCode == Activity.RESULT_OK) {
@@ -98,6 +107,16 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 oAuthPermissionListeners.remove(this)
             }
         })
+
+        GoogleSignIn.requestPermissions(
+                registrar.activity(),
+                GOOGLE_FIT_REQUEST_CODE,
+                GoogleSignIn.getLastSignedInAccount(registrar.context()),
+                fitnessOptions)
+    }
+
+    private fun hasOAuthPermission(fitnessOptions: FitnessOptions): Boolean {
+        return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(registrar.context()), fitnessOptions)
     }
 
     private fun readSample(request: ReadRequest, result: Result) {

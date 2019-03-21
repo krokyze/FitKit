@@ -3,34 +3,38 @@ part of fit_kit;
 class FitKit {
   static const MethodChannel _channel = const MethodChannel('fit_kit');
 
+  static Future<bool> requestPermissions(List<DataType> types) async {
+    return await _channel.invokeMethod('requestPermissions', {
+      "types": types.map((type) => _dataTypeToString(type)).toList(),
+    });
+  }
+
   static Future<List<FitData>> read(
     DataType type,
     DateTime dateFrom,
     DateTime dateTo,
   ) async {
-    String typeString;
-    switch (type) {
-      case DataType.HEART_RATE:
-        typeString = "heart_rate";
-        break;
-      case DataType.STEP_COUNT:
-        typeString = "step_count";
-        break;
-      case DataType.HEIGHT:
-        typeString = "height";
-        break;
-      case DataType.WEIGHT:
-        typeString = "weight";
-        break;
-    }
-
     return await _channel.invokeListMethod('read', {
-      "type": typeString,
+      "type": _dataTypeToString(type),
       "date_from": dateFrom.millisecondsSinceEpoch,
       "date_to": dateTo.millisecondsSinceEpoch,
     }).then(
       (response) => response.map((item) => FitData.fromJson(item)).toList(),
     );
+  }
+
+  static String _dataTypeToString(DataType type) {
+    switch (type) {
+      case DataType.HEART_RATE:
+        return "heart_rate";
+      case DataType.STEP_COUNT:
+        return "step_count";
+      case DataType.HEIGHT:
+        return "height";
+      case DataType.WEIGHT:
+        return "weight";
+    }
+    throw Exception('dataType $type not supported');
   }
 }
 

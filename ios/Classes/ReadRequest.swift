@@ -28,11 +28,8 @@ class ReadRequest {
             throw "invalid call arguments \(call.arguments)";
         }
 
-        guard let sampleType = HKSampleType.fromDartType(type: type),
-              let unit = HKUnit.fromDartType(type: type) else {
-            throw "type \"\(type)\" is not supported";
-        }
-
+        let sampleType = try HKSampleType.fromDartType(type: type)
+        let unit = try HKUnit.fromDartType(type: type)
         let dateFrom = Date(timeIntervalSince1970: dateFromEpoch.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: dateToEpoch.doubleValue / 1000)
 

@@ -11,4 +11,8 @@ class FitData {
       : value = json['value'],
         dateFrom = DateTime.fromMillisecondsSinceEpoch(json['date_from']),
         dateTo = DateTime.fromMillisecondsSinceEpoch(json['date_to']);
+
+  @override
+  String toString() =>
+      'FitData(value: $value, dateFrom: $dateFrom, dateTo: $dateTo)';
 }

@@ -20,7 +20,14 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        if (call.method == "read") {
+        if (call.method == "requestPermissions") {
+            do {
+                let request = try PermissionsRequest.fromCall(call: call)
+                requestPermissions(request: request, result: result)
+            } catch {
+                result(FlutterError(code: TAG, message: "Error \(error)", details: nil))
+            }
+        } else if (call.method == "read") {
             do {
                 let request = try ReadRequest.fromCall(call: call)
                 read(request: request, result: result)
@@ -32,19 +39,40 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func read(request: ReadRequest, result: @escaping FlutterResult) {
-        if (healthStore == nil) {
-            healthStore = HKHealthStore();
-        }
-
-        let readTypes = Set([request.sampleType])
-        healthStore!.requestAuthorization(toShare: nil, read: readTypes) { (success, error) in
+    private func requestPermissions(request: PermissionsRequest, result: @escaping FlutterResult) {
+        requestAuthorization(sampleTypes: request.sampleTypes) { success, error in
             guard success else {
-                result(FlutterError(code: self.TAG, message: "Error \(error?.localizedDescription ?? "empty")", details: nil))
+                result(false)
+                return
+            }
+
+            result(true)
+        }
+    }
+
+    private func read(request: ReadRequest, result: @escaping FlutterResult) {
+        requestAuthorization(sampleTypes: [request.sampleType]) { success, error in
+            guard success else {
+                result(error)
                 return
             }
 
             self.readSample(request: request, result: result)
+        }
+    }
+
+    private func requestAuthorization(sampleTypes: Array<HKSampleType>, completion: @escaping (Bool, FlutterError?) -> Void) {
+        if (healthStore == nil) {
+            healthStore = HKHealthStore();
+        }
+
+        healthStore!.requestAuthorization(toShare: nil, read: Set(sampleTypes)) { (success, error) in
+            guard success else {
+                completion(false, FlutterError(code: self.TAG, message: "Error \(error?.localizedDescription ?? "empty")", details: nil))
+                return
+            }
+
+            completion(true, nil)
         }
     }
 

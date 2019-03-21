@@ -16,7 +16,7 @@ To use this plugin, add `fit_kit` as a [dependency in your pubspec.yaml file](ht
 [Enable HealthKit](https://developer.apple.com/documentation/healthkit/setting_up_healthkit) and add NSHealthShareUsageDescription key to the Info.plist file.
 
 ### Sample Usage
-
+If you're using more than one DataType it's advised to call requestPermissions before, otherwise iOS HealthKit will ask to approve every permission one by one in separate screens. 
 ```dart
 import 'package:fit_kit/fit_kit.dart';
 
@@ -26,5 +26,17 @@ void read() async {
         DateTime.now().subtract(Duration(days: 5)),
         DateTime.now(),
     );
+}
+
+void readAll() async {
+    if (await FitKit.requestPermissions(DataType.values)) {
+      for (DataType type in DataType.values) {
+        final results = await FitKit.read(
+          type,
+          DateTime.now().subtract(Duration(days: 5)),
+          DateTime.now(),
+        );
+      }
+    }
 }
 ```

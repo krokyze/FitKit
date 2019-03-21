@@ -23,17 +23,21 @@ class _MyAppState extends State<MyApp> {
     String results = "";
 
     try {
-      for (DataType type in DataType.values) {
-        final response = await FitKit.read(
-          type,
-          DateTime.now().subtract(Duration(days: 5)),
-          DateTime.now(),
-        );
+      final permissions = await FitKit.requestPermissions(DataType.values);
+      if (!permissions) {
+        results = "User declined permissions";
+      } else {
+        for (DataType type in DataType.values) {
+          final data = await FitKit.read(
+            type,
+            DateTime.now().subtract(Duration(days: 5)),
+            DateTime.now(),
+          );
 
-        final result =
-            "Type $type = ${response.length} ${response.map((data) => data.value)}\n\n\n";
-        results += result;
-        debugPrint(result);
+          final result = "Type $type = ${data.length} $data\n\n\n";
+          results += result;
+          debugPrint(result);
+        }
       }
     } catch (e) {
       results = 'Failed to read all values. $e';

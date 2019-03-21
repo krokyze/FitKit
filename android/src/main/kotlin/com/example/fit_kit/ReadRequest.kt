@@ -15,7 +15,7 @@ class ReadRequest private constructor(
         @Throws
         fun fromCall(call: MethodCall): ReadRequest {
             val type = call.argument<String>("type") ?: throw Exception("type is not defined")
-            val dataType = fromDartType(type) ?: throw Exception("type $type is not supported")
+            val dataType = type.fromDartType()
 
             val dateFrom = safeLong(call, "date_from")?.let { Date(it) }
                     ?: throw Exception("date_from is not defined")
@@ -36,16 +36,6 @@ class ReadRequest private constructor(
             return when (value) {
                 is Int -> value.toLong()
                 is Long -> value
-                else -> null
-            }
-        }
-
-        private fun fromDartType(type: String): DataType? {
-            return when (type) {
-                "heart_rate" -> DataType.TYPE_HEART_RATE_BPM
-                "step_count" -> DataType.TYPE_STEP_COUNT_DELTA
-                "height" -> DataType.TYPE_HEIGHT
-                "weight" -> DataType.TYPE_WEIGHT
                 else -> null
             }
         }
