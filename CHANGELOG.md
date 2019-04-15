@@ -1,3 +1,7 @@
+## 0.0.4
+
+* **BREAKING CHANGE** Migrated to use AndroidX.
+
 ## 0.0.3
 
 * Added requestPermissions method to ease requesting more than 1 data type. 
