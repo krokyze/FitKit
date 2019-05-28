@@ -32,6 +32,8 @@ extension HKSampleType {
                 } else {
                     return nil
                 }
+            case "sleep_analysis":
+                return HKSampleType.categoryType(forIdentifier: .sleepAnalysis)
             default:
                 return nil
             }
@@ -64,6 +66,8 @@ extension HKUnit {
                 }
             case "dietary_water":
                 return HKUnit.liter()
+            case "sleep_analysis":
+                return HKUnit.minute()
             default:
                 return nil
             }

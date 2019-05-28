@@ -39,9 +39,20 @@ class FitKit {
         return "active_energy_burned";
       case DataType.WATER:
         return "dietary_water";
+      case DataType.SLEEP:
+        return "sleep_analysis";
     }
     throw Exception('dataType $type not supported');
   }
 }
 
-enum DataType { HEART_RATE, STEP_COUNT, HEIGHT, WEIGHT, WALK, ENERGY, WATER }
+enum DataType {
+  HEART_RATE,
+  STEP_COUNT,
+  HEIGHT,
+  WEIGHT,
+  WALK,
+  ENERGY,
+  WATER,
+  SLEEP
+}
