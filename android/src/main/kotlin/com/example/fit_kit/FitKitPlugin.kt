@@ -7,8 +7,11 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataPoint
 import com.google.android.gms.fitness.data.Field
+import com.google.android.gms.fitness.data.Session
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import com.google.android.gms.fitness.result.SessionReadResponse
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -85,7 +88,12 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 .build()
 
         requestOAuthPermissions(options, {
-            readSample(request, result)
+            if(request.type == "sleep_analysis"){
+                readSession(request, result)
+            } else {
+                readSample(request, result)
+            }
+            
         }, {
             result.error(TAG, "User denied permission access", null)
         })
@@ -136,11 +144,37 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 .addOnCanceledListener { result.error(TAG, "GoogleFit Cancelled", null) }
     }
 
+    private fun readSession(request: ReadRequest, result: Result) {
+        Log.d(TAG, "readSample: ${request.type}")
+
+        val readRequest = SessionReadRequest.Builder()
+                .read(request.dataType)
+                //.bucketByTime(1, TimeUnit.DAYS)
+                .setTimeInterval(request.dateFrom.time, request.dateTo.time, TimeUnit.MILLISECONDS)
+                .readSessionsFromAllApps()
+                .enableServerQueries()
+                .build()
+
+        Fitness.getSessionsClient(registrar.context(), GoogleSignIn.getLastSignedInAccount(registrar.context())!!)
+                .readSession(readRequest)
+                .addOnSuccessListener { response -> onSuccessSession(response, result) }
+                .addOnFailureListener { e -> result.error(TAG, e.message, null) }
+                .addOnCanceledListener { result.error(TAG, "GoogleFit Cancelled", null) }
+    }
+
     private fun onSuccess(response: DataReadResponse, result: Result) {
         response.buckets.flatMap { it.dataSets }
                 .filterNot { it.isEmpty }
                 .flatMap { it.dataPoints }
                 .map(::dataPointToMap)
+                .let(result::success)
+    }
+
+    private fun onSuccessSession(response: SessionReadResponse, result: Result) {
+        // TODO: Change this to support other Sessions instead of only sleep.
+        var sessions = response.getSessions()
+        sessions.filterNot { it.getActivity() != "sleep" }
+                .map(::sessionToMap)
                 .let(result::success)
     }
 
@@ -158,6 +192,21 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
         }
         map["date_from"] = dataPoint.getStartTime(TimeUnit.MILLISECONDS)
         map["date_to"] = dataPoint.getEndTime(TimeUnit.MILLISECONDS)
+        return map
+    }
+
+    @Suppress("IMPLICIT_CAST_TO_ANY")
+    private fun sessionToMap(session: Session): Map<String, Any> {
+        // Activity types are 
+        // Sleeping     72
+        // Light sleep	109
+        // Deep sleep	110
+        // REM sleep	111
+        // Awake (during sleep cycle)	112
+        val map = mutableMapOf<String, Any>()
+        map["value"] = 72
+        map["date_from"] = session.getStartTime(TimeUnit.MILLISECONDS)
+        map["date_to"] = session.getEndTime(TimeUnit.MILLISECONDS)
         return map
     }
 }

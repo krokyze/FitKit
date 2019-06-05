@@ -12,7 +12,7 @@ fun String.fromDartType(): DataType {
         "distance_walking_running" -> DataType.TYPE_DISTANCE_DELTA
         "active_energy_burned" -> DataType.TYPE_CALORIES_EXPENDED
         "dietary_water" -> DataType.AGGREGATE_HYDRATION
+        "sleep_analysis" -> DataType.AGGREGATE_ACTIVITY_SUMMARY
         else -> throw Exception("type $this is not supported")
     }
 }
-
