@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/fit_kit.svg)](https://pub.dartlang.org/packages/fit_kit)
 
-Flutter plugin for reading health and fitness data. Wraps HealthKit on iOS and GoogleFit on Android. Currently only supports reading heart rate, step count, height and weight.
+Flutter plugin for reading health and fitness data. Wraps HealthKit on iOS and GoogleFit on Android. Currently only supports reading heart rate, step count, distance walked, calories burned, water drink, sleeping hours, height and weight.
 
 ## Usage
 
