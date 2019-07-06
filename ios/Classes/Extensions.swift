@@ -22,6 +22,8 @@ extension HKSampleType {
                 return HKSampleType.quantityType(forIdentifier: .height)
             case "weight":
                 return HKSampleType.quantityType(forIdentifier: .bodyMass)
+            case "distance":
+                return HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)
             default:
                 return nil
             }
@@ -41,6 +43,8 @@ extension HKUnit {
             case "step_count":
                 return HKUnit.count()
             case "height":
+                return HKUnit.meter()
+            case "distance":
                 return HKUnit.meter()
             case "weight":
                 return HKUnit.gramUnit(with: .kilo)
