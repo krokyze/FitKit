@@ -33,6 +33,8 @@ class FitKit {
         return "height";
       case DataType.WEIGHT:
         return "weight";
+      case DataType.DISTANCE:
+        return "distance";
     }
     throw Exception('dataType $type not supported');
   }
