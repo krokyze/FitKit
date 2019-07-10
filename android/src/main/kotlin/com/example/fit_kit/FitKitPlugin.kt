@@ -88,7 +88,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 .build()
 
         requestOAuthPermissions(options, {
-            if(request.type == "sleep_analysis"){
+            if(request.type == "sleep"){
                 readSession(request, result)
             } else {
                 readSample(request, result)

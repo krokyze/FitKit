@@ -86,7 +86,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
             _, samplesOrNil, error in
             
             // TODO: Change this to support all HKCategorySample instead of only sleepAnalysis
-            if request.type == "sleep_analysis" { 
+            if request.type == "sleep" { 
                 guard let samples = samplesOrNil as? [HKCategorySample] else {
                     result(FlutterError(code: self.TAG, message: "Results are null", details: error))
                     return

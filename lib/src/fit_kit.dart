@@ -33,14 +33,14 @@ class FitKit {
         return "height";
       case DataType.WEIGHT:
         return "weight";
-      case DataType.WALK:
-        return "distance_walking_running";
+      case DataType.DISTANCE:
+        return "distance";
       case DataType.ENERGY:
-        return "active_energy_burned";
+        return "energy";
       case DataType.WATER:
-        return "dietary_water";
+        return "water";
       case DataType.SLEEP:
-        return "sleep_analysis";
+        return "sleep";
     }
     throw Exception('dataType $type not supported');
   }
@@ -51,7 +51,7 @@ enum DataType {
   STEP_COUNT,
   HEIGHT,
   WEIGHT,
-  WALK,
+  DISTANCE,
   ENERGY,
   WATER,
   SLEEP

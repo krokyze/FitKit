@@ -22,17 +22,17 @@ extension HKSampleType {
                 return HKSampleType.quantityType(forIdentifier: .height)
             case "weight":
                 return HKSampleType.quantityType(forIdentifier: .bodyMass)
-            case "distance_walking_running":
+            case "distance":
                 return HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)
-            case "active_energy_burned":
+            case "energy":
                 return HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)
-            case "dietary_water":
+            case "water":
                 if #available(iOS 9, *) {
                     return HKSampleType.quantityType(forIdentifier: .dietaryWater)
                 } else {
                     return nil
                 }
-            case "sleep_analysis":
+            case "sleep":
                 return HKSampleType.categoryType(forIdentifier: .sleepAnalysis)
             default:
                 return nil
@@ -56,17 +56,17 @@ extension HKUnit {
                 return HKUnit.meter()
             case "weight":
                 return HKUnit.gramUnit(with: .kilo)
-            case "distance_walking_running":
+            case "distance":
                 return HKUnit.meter()
-            case "active_energy_burned":
+            case "energy":
                 if #available(iOS 11, *) {
                     return HKUnit.largeCalorie()
                 } else {
                     return HKUnit.calorie()
                 }
-            case "dietary_water":
+            case "water":
                 return HKUnit.liter()
-            case "sleep_analysis":
+            case "sleep":
                 return HKUnit.minute()
             default:
                 return nil
