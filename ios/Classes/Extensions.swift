@@ -57,11 +57,7 @@ extension HKUnit {
             case "distance":
                 return HKUnit.meter()
             case "energy":
-                if #available(iOS 11, *) {
-                    return HKUnit.largeCalorie()
-                } else {
-                    return HKUnit.calorie()
-                }
+                return HKUnit.kilocalorie()
             case "water":
                 return HKUnit.liter()
             default:
