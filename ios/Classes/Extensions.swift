@@ -22,6 +22,16 @@ extension HKSampleType {
                 return HKSampleType.quantityType(forIdentifier: .height)
             case "weight":
                 return HKSampleType.quantityType(forIdentifier: .bodyMass)
+            case "distance":
+                return HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)
+            case "energy":
+                return HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)
+            case "water":
+                if #available(iOS 9, *) {
+                    return HKSampleType.quantityType(forIdentifier: .dietaryWater)
+                } else {
+                    return nil
+                }
             default:
                 return nil
             }
@@ -44,6 +54,12 @@ extension HKUnit {
                 return HKUnit.meter()
             case "weight":
                 return HKUnit.gramUnit(with: .kilo)
+            case "distance":
+                return HKUnit.meter()
+            case "energy":
+                return HKUnit.kilocalorie()
+            case "water":
+                return HKUnit.liter()
             default:
                 return nil
             }
