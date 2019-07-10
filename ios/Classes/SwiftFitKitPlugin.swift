@@ -84,37 +84,20 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
 
         let query = HKSampleQuery(sampleType: request.sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
             _, samplesOrNil, error in
-            
-            // TODO: Change this to support all HKCategorySample instead of only sleepAnalysis
-            if request.type == "sleep" { 
-                guard let samples = samplesOrNil as? [HKCategorySample] else {
-                    result(FlutterError(code: self.TAG, message: "Results are null", details: error))
-                    return
-                }
-                
-                print(samples)
-                result(samples.map { sample -> NSDictionary in
-                    return [
-                        "value": sample.value, // inBed = 0, asleep = 1, awake = 2
-                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                    ]
-                })
-            } else {
-                guard let samples = samplesOrNil as? [HKQuantitySample] else {
-                    result(FlutterError(code: self.TAG, message: "Results are null", details: error))
-                    return
-                }
 
-                print(samples)
-                result(samples.map { sample -> NSDictionary in
-                    return [
-                        "value": sample.quantity.doubleValue(for: request.unit),
-                        "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                        "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                    ]
-                })
+            guard let samples = samplesOrNil as? [HKQuantitySample] else {
+                result(FlutterError(code: self.TAG, message: "Results are null", details: error))
+                return
             }
+
+            print(samples)
+            result(samples.map { sample -> NSDictionary in
+                return [
+                    "value": sample.quantity.doubleValue(for: request.unit),
+                    "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
+                    "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
+                ]
+            })
         }
         healthStore!.execute(query)
     }
