@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Added distance walked, calories burned and water drank data types. 
+
 ## 0.0.4
 
 * **BREAKING CHANGE** Migrated to use AndroidX.
