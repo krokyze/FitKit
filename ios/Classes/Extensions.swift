@@ -26,6 +26,8 @@ extension HKSampleType {
                 return HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)
             case "energy":
                 return HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)
+            case "sleep":	
+                return HKSampleType.categoryType(forIdentifier: .sleepAnalysis)
             case "water":
                 if #available(iOS 9, *) {
                     return HKSampleType.quantityType(forIdentifier: .dietaryWater)
@@ -58,6 +60,8 @@ extension HKUnit {
                 return HKUnit.meter()
             case "energy":
                 return HKUnit.kilocalorie()
+            case "sleep":	
+                return HKUnit.minute()
             case "water":
                 return HKUnit.liter()
             default:
