@@ -93,6 +93,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
             print(samples)
             result(samples.map { sample -> NSDictionary in
                 return [
+                    "source": sample.source.name, // change to sourceRevision later, as source is deprecated
                     "value": sample.quantity.doubleValue(for: request.unit),
                     "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                     "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
