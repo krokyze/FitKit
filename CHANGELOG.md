@@ -1,3 +1,7 @@
+## 0.0.6
+
+* Added data source to FitData.
+
 ## 0.0.5
 
 * Added distance walked, calories burned and water drank data types. 
