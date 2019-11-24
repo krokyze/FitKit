@@ -1,3 +1,5 @@
+
+
 # FitKit
 
 [![pub package](https://img.shields.io/pub/v/fit_kit.svg)](https://pub.dartlang.org/packages/fit_kit)
@@ -15,8 +17,9 @@ To use this plugin, add `fit_kit` as a [dependency in your pubspec.yaml file](ht
 ##### iOS
 [Enable HealthKit](https://developer.apple.com/documentation/healthkit/setting_up_healthkit) and add NSHealthShareUsageDescription key to the Info.plist file.
 
-### Sample Usage
-If you're using more than one DataType it's advised to call requestPermissions before, otherwise iOS HealthKit will ask to approve every permission one by one in separate screens. 
+## Sample Usage
+If you're using more than one DataType it's advised to call requestPermissions with all the data types once, otherwise iOS HealthKit will ask to approve every permission one by one in separate screens.
+
 ```dart
 import 'package:fit_kit/fit_kit.dart';
 
@@ -54,3 +57,10 @@ These are currently available data types and their corresponding GoogleFit/Healt
 | **DISTANCE** | [TYPE_DISTANCE_DELTA](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_DISTANCE_DELTA) | [distanceWalkingRunning](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615230-distancewalkingrunning) | _meter_ |
 | **ENERGY** | [TYPE_CALORIES_EXPENDED](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_CALORIES_EXPENDED) | [activeEnergyBurned](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615771-activeenergyburned) | _kilocalorie_ |
 | **WATER** | [TYPE_HYDRATION](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_HYDRATION) | [dietaryWater](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615313-dietarywater) <sup>>= iOS 9</sup> | liter |
+
+## BE AWARE
+
+There's some differences on iOS for these methods:
+* `FitKit.hasPermissions` - false means no, true means user has approved or declined permissions.
+	> To help prevent possible leaks of sensitive health information, your app cannot determine whether or not a user has granted permission to read data. If you are not given permission, it simply appears as if there is no data of the requested type in the HealthKit store. [https://developer.apple.com/documentation/healthkit/hkhealthstore/1614154-authorizationstatus](https://developer.apple.com/documentation/healthkit/hkhealthstore/1614154-authorizationstatus)
+* `FitKit.revokePermissions` - isn't supported by HealthKit, method does nothing.
