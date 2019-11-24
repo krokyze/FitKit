@@ -1,5 +1,4 @@
-
-# FitKit (<img src="https://www.gstatic.com/images/branding/product/1x/gfit_512dp.png" height="24"/> + <img src="https://developer.apple.com/assets/elements/icons/healthkit/healthkit-96x96_2x.png" height="24"/>)
+# FitKit (<img src="https://www.gstatic.com/images/branding/product/1x/gfit_512dp.png" height="24"/>‿<img src="https://developer.apple.com/assets/elements/icons/healthkit/healthkit-96x96_2x.png" height="24"/>)
 
 [![pub package](https://img.shields.io/pub/v/fit_kit.svg)](https://pub.dartlang.org/packages/fit_kit)
 
