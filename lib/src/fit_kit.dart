@@ -3,18 +3,27 @@ part of fit_kit;
 class FitKit {
   static const MethodChannel _channel = const MethodChannel('fit_kit');
 
+  /// iOS isn't completely supported by HealthKit, false means no, true means user has approved or declined permissions.
+  /// In case user has declined permissions read will just return empty list for declined data types.
   static Future<bool> hasPermissions(List<DataType> types) async {
     return await _channel.invokeMethod('hasPermissions', {
       "types": types.map((type) => _dataTypeToString(type)).toList(),
     });
   }
 
+  /// If you're using more than one DataType it's advised to call requestPermissions with all the data types once,
+  /// otherwise iOS HealthKit will ask to approve every permission one by one in separate screens.
+  ///
+  /// ```
+  /// await FitKit.requestPermissions(DataType.values)
+  /// ```
   static Future<bool> requestPermissions(List<DataType> types) async {
     return await _channel.invokeMethod('requestPermissions', {
       "types": types.map((type) => _dataTypeToString(type)).toList(),
     });
   }
 
+  /// iOS isn't supported by HealthKit, method does nothing.
   static Future<void> revokePermissions() async {
     return await _channel.invokeMethod('revokePermissions');
   }
