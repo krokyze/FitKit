@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/fit_kit.svg)](https://pub.dartlang.org/packages/fit_kit)
 
-Flutter plugin for reading health and fitness data. Wraps HealthKit on iOS and GoogleFit on Android. Currently only supports reading heart rate, step count, distance walked, calories burned, water drank, height and weight.
+Flutter plugin for reading health and fitness data. Wraps HealthKit on iOS and GoogleFit on Android.
 
 ## Usage
 
@@ -40,3 +40,17 @@ void readAll() async {
     }
 }
 ```
+
+## Supported data types
+
+These are currently available data types and their corresponding GoogleFit/HealthKit types. 
+
+| Data Type | Android (GoogleFit) | iOS (HealthKit) | Unit | 
+| --------------------------: | ----------------- | ----------------- | -------------- |
+| **HEART_RATE** | [TYPE_HEART_RATE_BPM](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_HEART_RATE_BPM) | [heartRate](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615138-heartrate) | _count/min_ |
+| **STEP_COUNT** | [TYPE_STEP_COUNT_DELTA](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_STEP_COUNT_DELTA) | [stepCount](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615548-stepcount) | _count_ |
+| **HEIGHT** | [TYPE_HEIGHT](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_HEIGHT) | [height](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615039-height) | _meter_ |
+| **WEIGHT** | [TYPE_WEIGHT](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_WEIGHT) | [bodyMass](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615693-bodymass) | _kilogram_ |
+| **DISTANCE** | [TYPE_DISTANCE_DELTA](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_DISTANCE_DELTA) | [distanceWalkingRunning](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615230-distancewalkingrunning) | _meter_ |
+| **ENERGY** | [TYPE_CALORIES_EXPENDED](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_CALORIES_EXPENDED) | [activeEnergyBurned](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615771-activeenergyburned) | _kilocalorie_ |
+| **WATER** | [TYPE_HYDRATION](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_HYDRATION) | [dietaryWater](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615313-dietarywater) <sup>>= iOS 9</sup> | liter |
