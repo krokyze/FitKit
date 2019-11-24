@@ -3,6 +3,7 @@ package com.example.fit_kit
 import android.app.Activity
 import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataPoint
@@ -15,6 +16,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.concurrent.TimeUnit
+
 
 class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
 
@@ -46,30 +48,43 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        when (call.method) {
-            "requestPermissions" -> try {
-                val request = PermissionsRequest.fromCall(call)
-                requestPermissions(request, result)
-            } catch (e: Throwable) {
-                result.error(TAG, e.message, null)
+        try {
+            when (call.method) {
+                "hasPermissions" -> {
+                    val request = PermissionsRequest.fromCall(call)
+                    hasPermissions(request, result)
+                }
+                "requestPermissions" -> {
+                    val request = PermissionsRequest.fromCall(call)
+                    requestPermissions(request, result)
+                }
+                "revokePermissions" -> revokePermissions(result)
+                "read" -> {
+                    val request = ReadRequest.fromCall(call)
+                    read(request, result)
+                }
+                else -> result.notImplemented()
             }
-            "read" -> try {
-                val request = ReadRequest.fromCall(call)
-                read(request, result)
-            } catch (e: Throwable) {
-                result.error(TAG, e.message, null)
-            }
-            else -> result.notImplemented()
+        } catch (e: Throwable) {
+            result.error(TAG, e.message, null)
+        }
+    }
+
+    private fun hasPermissions(request: PermissionsRequest, result: Result) {
+        val options = FitnessOptions.builder()
+                .addDataTypes(request.dataTypes)
+                .build()
+
+        if (hasOAuthPermission(options)) {
+            result.success(true)
+        } else {
+            result.success(false)
         }
     }
 
     private fun requestPermissions(request: PermissionsRequest, result: Result) {
         val options = FitnessOptions.builder()
-                .also { builder ->
-                    request.dataTypes.forEach { dataType ->
-                        builder.addDataType(dataType)
-                    }
-                }
+                .addDataTypes(request.dataTypes)
                 .build()
 
         requestOAuthPermissions(options, {
@@ -77,6 +92,38 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
         }, {
             result.success(false)
         })
+    }
+
+    /**
+     * let's wait for some answers
+     * https://github.com/android/fit-samples/issues/28#issuecomment-557865949
+     */
+    private fun revokePermissions(result: Result) {
+        val fitnessOptions = FitnessOptions.builder()
+                .build()
+
+        if (!hasOAuthPermission(fitnessOptions)) {
+            result.success(null)
+            return
+        }
+
+        Fitness.getConfigClient(registrar.context(), GoogleSignIn.getLastSignedInAccount(registrar.context())!!)
+                .disableFit()
+                .continueWithTask {
+                    val signInOptions = GoogleSignInOptions.Builder()
+                            .addExtension(fitnessOptions)
+                            .build()
+                    GoogleSignIn.getClient(registrar.context(), signInOptions)
+                            .revokeAccess()
+                }
+                .addOnSuccessListener { result.success(null) }
+                .addOnFailureListener { e ->
+                    if (!hasOAuthPermission(fitnessOptions)) {
+                        result.success(null)
+                    } else {
+                        result.error(TAG, e.message, null)
+                    }
+                }
     }
 
     private fun read(request: ReadRequest, result: Result) {

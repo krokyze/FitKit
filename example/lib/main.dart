@@ -11,21 +11,23 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _results = 'Unknown';
+  String result = '';
+  Map<DataType, List<FitData>> results = Map();
+  bool permissions;
 
   @override
   void initState() {
     super.initState();
-    readAll();
+    hasPermissions();
   }
 
   Future<void> readAll() async {
-    String results = "";
+    results.clear();
 
     try {
-      final permissions = await FitKit.requestPermissions(DataType.values);
+      permissions = await FitKit.requestPermissions(DataType.values);
       if (!permissions) {
-        results = "User declined permissions";
+        result = 'requestPermissions: failed';
       } else {
         for (DataType type in DataType.values) {
           final data = await FitKit.read(
@@ -34,39 +36,100 @@ class _MyAppState extends State<MyApp> {
             DateTime.now(),
           );
 
-          final result = "Type $type = ${data.length} $data\n\n\n";
-          results += result;
-          debugPrint(result);
+          results[type] = data;
         }
+
+        result = 'readAll: success';
       }
     } catch (e) {
-      results = 'Failed to read all values. $e';
+      result = 'readAll: $e';
+    }
+
+    setState(() {});
+  }
+
+  Future<void> revokePermissions() async {
+    results.clear();
+
+    try {
+      await FitKit.revokePermissions();
+      permissions = await FitKit.hasPermissions(DataType.values);
+      result = 'revokePermissions: success';
+    } catch (e) {
+      result = 'revokePermissions: $e';
+    }
+
+    setState(() {});
+  }
+
+  Future<void> hasPermissions() async {
+    try {
+      permissions = await FitKit.hasPermissions(DataType.values);
+    } catch (e) {
+      result = 'hasPermissions: $e';
     }
 
     if (!mounted) return;
 
-    setState(() {
-      _results = results;
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final items =
+        results.entries.expand((entry) => [entry.key, ...entry.value]).toList();
+
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: Text('FitKit Example'),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              Text('$_results'),
-              FlatButton(
-                onPressed: () => readAll(),
-                child: Text("Reload"),
+        body: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    onPressed: () => readAll(),
+                    child: Text('Read All'),
+                  ),
+                ),
+                Expanded(
+                  child: FlatButton(
+                    onPressed: () => revokePermissions(),
+                    child: Text('Revoke permissions'),
+                  ),
+                ),
+              ],
+            ),
+            Text('Permissions: $permissions'),
+            Text(result),
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  if (item is DataType) {
+                    return ListTile(
+                      title: Text(
+                        '$item - ${results[item].length}',
+                        style: Theme.of(context).textTheme.title,
+                      ),
+                    );
+                  } else if (item is FitData) {
+                    return ListTile(
+                      title: Text(
+                        '$item',
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    );
+                  }
+
+                  return Container();
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

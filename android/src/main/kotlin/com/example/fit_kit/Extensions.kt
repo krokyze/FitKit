@@ -1,5 +1,6 @@
 package com.example.fit_kit
 
+import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 
 @Throws
@@ -14,4 +15,8 @@ fun String.fromDartType(): DataType {
         "water" -> DataType.TYPE_HYDRATION
         else -> throw Exception("type $this is not supported")
     }
+}
+
+fun FitnessOptions.Builder.addDataTypes(dataTypes: List<DataType>) = apply {
+    dataTypes.forEach { dataType -> addDataType(dataType) }
 }

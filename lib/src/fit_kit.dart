@@ -3,10 +3,20 @@ part of fit_kit;
 class FitKit {
   static const MethodChannel _channel = const MethodChannel('fit_kit');
 
+  static Future<bool> hasPermissions(List<DataType> types) async {
+    return await _channel.invokeMethod('hasPermissions', {
+      "types": types.map((type) => _dataTypeToString(type)).toList(),
+    });
+  }
+
   static Future<bool> requestPermissions(List<DataType> types) async {
     return await _channel.invokeMethod('requestPermissions', {
       "types": types.map((type) => _dataTypeToString(type)).toList(),
     });
+  }
+
+  static Future<void> revokePermissions() async {
+    return await _channel.invokeMethod('revokePermissions');
   }
 
   static Future<List<FitData>> read(

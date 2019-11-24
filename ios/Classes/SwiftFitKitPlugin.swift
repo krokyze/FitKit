@@ -20,22 +20,66 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        if (call.method == "requestPermissions") {
-            do {
+        if (healthStore == nil) {
+            healthStore = HKHealthStore();
+        }
+
+        do {
+            if (call.method == "hasPermissions") {
+                let request = try PermissionsRequest.fromCall(call: call)
+                hasPermissions(request: request, result: result)
+            } else if (call.method == "requestPermissions") {
                 let request = try PermissionsRequest.fromCall(call: call)
                 requestPermissions(request: request, result: result)
-            } catch {
-                result(FlutterError(code: TAG, message: "Error \(error)", details: nil))
-            }
-        } else if (call.method == "read") {
-            do {
+            } else if (call.method == "revokePermissions") {
+                revokePermissions(result: result)
+            } else if (call.method == "read") {
                 let request = try ReadRequest.fromCall(call: call)
                 read(request: request, result: result)
-            } catch {
-                result(FlutterError(code: TAG, message: "Error \(error)", details: nil))
+            } else {
+                result(FlutterMethodNotImplemented)
+            }
+        } catch {
+            result(FlutterError(code: TAG, message: "Error \(error)", details: nil))
+        }
+    }
+
+
+    /**
+    * On iOS you can only know if user has responded to request access screen.
+    * Not possible to tell if he has allowed access to read.
+    *
+    *   # getRequestStatusForAuthorization #
+    *   If "status == unnecessary" means if requestAuthorization will be called request access screen will not be shown.
+    *   So user has already responded to request access screen and kinda has permissions.
+    *
+    *   # authorizationStatus #
+    *   If "status == notDetermined" user has not responded to request access screen.
+    *   Once he responds no matter of the result status will be sharingDenied.
+    */
+    private func hasPermissions(request: PermissionsRequest, result: @escaping FlutterResult) {
+        if #available(iOS 12.0, *) {
+            healthStore!.getRequestStatusForAuthorization(toShare: [], read: Set(request.sampleTypes)) { (status, error) in
+                guard error == nil else {
+                    result(FlutterError(code: self.TAG, message: "hasPermissions", details: error))
+                    return
+                }
+
+                guard status == HKAuthorizationRequestStatus.unnecessary else {
+                    result(false)
+                    return
+                }
+
+                result(true)
             }
         } else {
-            result(FlutterMethodNotImplemented)
+            let authorized = request.sampleTypes.map {
+                        healthStore!.authorizationStatus(for: $0)
+                    }
+                    .allSatisfy {
+                        $0 != HKAuthorizationStatus.notDetermined
+                    }
+            result(authorized)
         }
     }
 
@@ -50,6 +94,13 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    /**
+    * Not supported by HealthKit.
+    */
+    private func revokePermissions(result: @escaping FlutterResult) {
+        result(nil)
+    }
+
     private func read(request: ReadRequest, result: @escaping FlutterResult) {
         requestAuthorization(sampleTypes: [request.sampleType]) { success, error in
             guard success else {
@@ -62,10 +113,6 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
     }
 
     private func requestAuthorization(sampleTypes: Array<HKSampleType>, completion: @escaping (Bool, FlutterError?) -> Void) {
-        if (healthStore == nil) {
-            healthStore = HKHealthStore();
-        }
-
         healthStore!.requestAuthorization(toShare: nil, read: Set(sampleTypes)) { (success, error) in
             guard success else {
                 completion(false, FlutterError(code: self.TAG, message: "Error \(error?.localizedDescription ?? "empty")", details: nil))
