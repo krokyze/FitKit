@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Added `userEntered` to FitData.
+
 ## 1.0.0
 
 * Added `hasPermissions` method.

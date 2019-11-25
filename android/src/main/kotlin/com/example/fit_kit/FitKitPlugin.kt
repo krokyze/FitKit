@@ -211,6 +211,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
         map["date_from"] = dataPoint.getStartTime(TimeUnit.MILLISECONDS)
         map["date_to"] = dataPoint.getEndTime(TimeUnit.MILLISECONDS)
         map["source"] = dataPoint.originalDataSource.streamName
+        map["user_entered"] = dataPoint.originalDataSource.streamName == "user_input"
         return map
     }
 }
