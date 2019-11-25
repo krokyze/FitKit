@@ -8,7 +8,8 @@ class ReadRequest private constructor(
         val type: String,
         val dataType: DataType,
         val dateFrom: Date,
-        val dateTo: Date
+        val dateTo: Date,
+        val limit: Int?
 ) {
 
     companion object {
@@ -21,9 +22,9 @@ class ReadRequest private constructor(
                     ?: throw Exception("date_from is not defined")
             val dateTo = safeLong(call, "date_to")?.let { Date(it) }
                     ?: throw Exception("date_to is not defined")
+            val limit = call.argument<Int?>("limit")
 
-
-            return ReadRequest(type, dataType, dateFrom, dateTo)
+            return ReadRequest(type, dataType, dateFrom, dateTo, limit)
         }
 
         /**

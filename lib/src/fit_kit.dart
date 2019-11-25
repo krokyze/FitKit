@@ -14,9 +14,7 @@ class FitKit {
   /// If you're using more than one DataType it's advised to call requestPermissions with all the data types once,
   /// otherwise iOS HealthKit will ask to approve every permission one by one in separate screens.
   ///
-  /// ```
-  /// await FitKit.requestPermissions(DataType.values)
-  /// ```
+  /// `await FitKit.requestPermissions(DataType.values)`
   static Future<bool> requestPermissions(List<DataType> types) async {
     return await _channel.invokeMethod('requestPermissions', {
       "types": types.map((type) => _dataTypeToString(type)).toList(),
@@ -28,18 +26,26 @@ class FitKit {
     return await _channel.invokeMethod('revokePermissions');
   }
 
+  /// #### It's not advised to call `await FitKit.read(dataType)` without any extra parameters. This can lead to FAILED BINDER TRANSACTION on Android devices because of the data batch size being too large.
   static Future<List<FitData>> read(
-    DataType type,
+    DataType type, {
     DateTime dateFrom,
     DateTime dateTo,
-  ) async {
+    int limit,
+  }) async {
     return await _channel.invokeListMethod('read', {
       "type": _dataTypeToString(type),
-      "date_from": dateFrom.millisecondsSinceEpoch,
-      "date_to": dateTo.millisecondsSinceEpoch,
+      "date_from": dateFrom?.millisecondsSinceEpoch ?? 1,
+      "date_to": (dateTo ?? DateTime.now()).millisecondsSinceEpoch,
+      "limit": limit,
     }).then(
       (response) => response.map((item) => FitData.fromJson(item)).toList(),
     );
+  }
+
+  static Future<FitData> readLast(DataType type) async {
+    return await read(type, limit: 1)
+        .then((results) => results.isEmpty ? null : results[0]);
   }
 
   static String _dataTypeToString(DataType type) {

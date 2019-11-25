@@ -127,14 +127,19 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
         print("readSample: \(request.type)")
 
         let predicate = HKQuery.predicateForSamples(withStart: request.dateFrom, end: request.dateTo, options: .strictStartDate)
-        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: request.limit == nil)
 
-        let query = HKSampleQuery(sampleType: request.sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
+        let query = HKSampleQuery(sampleType: request.sampleType, predicate: predicate, limit: request.limit ?? HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
             _, samplesOrNil, error in
 
-            guard let samples = samplesOrNil as? [HKQuantitySample] else {
+            guard var samples = samplesOrNil as? [HKQuantitySample] else {
                 result(FlutterError(code: self.TAG, message: "Results are null", details: error))
                 return
+            }
+
+            if (request.limit != nil) {
+                // if limit is used sort back to ascending
+                samples = samples.sorted(by: { $0.startDate.compare($1.startDate) == .orderedAscending })
             }
 
             print(samples)

@@ -171,7 +171,12 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
 
         val readRequest = DataReadRequest.Builder()
                 .read(request.dataType)
-                .bucketByTime(1, TimeUnit.DAYS)
+                .also { builder ->
+                    when (request.limit != null) {
+                        true -> builder.setLimit(request.limit)
+                        else -> builder.bucketByTime(1, TimeUnit.DAYS)
+                    }
+                }
                 .setTimeRange(request.dateFrom.time, request.dateTo.time, TimeUnit.MILLISECONDS)
                 .enableServerQueries()
                 .build()
@@ -184,7 +189,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
     }
 
     private fun onSuccess(response: DataReadResponse, result: Result) {
-        response.buckets.flatMap { it.dataSets }
+        (response.dataSets + response.buckets.flatMap { it.dataSets })
                 .filterNot { it.isEmpty }
                 .flatMap { it.dataPoints }
                 .map(::dataPointToMap)

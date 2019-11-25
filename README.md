@@ -22,23 +22,27 @@ If you're using more than one DataType it's advised to call requestPermissions w
 import 'package:fit_kit/fit_kit.dart';
 
 void read() async {
-    final results = await FitKit.read(
-        DataType.HEART_RATE,
-        DateTime.now().subtract(Duration(days: 5)),
-        DateTime.now(),
-    );
+  final results = await FitKit.read(
+    DataType.HEART_RATE,
+    dateFrom: DateTime.now().subtract(Duration(days: 5)),
+    dateTo: DateTime.now(),
+  );
+}
+
+void readLast() async {
+  final result = await FitKit.readLast(DataType.HEIGHT);
 }
 
 void readAll() async {
-    if (await FitKit.requestPermissions(DataType.values)) {
-      for (DataType type in DataType.values) {
-        final results = await FitKit.read(
-          type,
-          DateTime.now().subtract(Duration(days: 5)),
-          DateTime.now(),
-        );
-      }
+  if (await FitKit.requestPermissions(DataType.values)) {
+    for (DataType type in DataType.values) {
+      final results = await FitKit.read(
+        type,
+        dateFrom: DateTime.now().subtract(Duration(days: 5)),
+        dateTo: DateTime.now(),
+      );
     }
+  }
 }
 ```
 
@@ -57,6 +61,8 @@ These are currently available data types and their corresponding GoogleFit/Healt
 | **WATER** | [TYPE_HYDRATION](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_HYDRATION) | [dietaryWater](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615313-dietarywater) <sup>>= iOS 9</sup> | liter |
 
 ## BE AWARE
+
+* Calling `await FitKit.read(dataType)` without any extra parameters can lead to FAILED BINDER TRANSACTION on Android devices because of the data batch size being too large.
 
 There's some differences on iOS for these methods:
 * `FitKit.hasPermissions` - false means no, true means user has approved or declined permissions.
