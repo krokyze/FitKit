@@ -7,7 +7,13 @@ class FitData {
   final String source;
   final bool userEntered;
 
-  FitData(this.value, this.dateFrom, this.dateTo, this.source, this.userEntered);
+  FitData(
+    this.value,
+    this.dateFrom,
+    this.dateTo,
+    this.source,
+    this.userEntered,
+  );
 
   FitData.fromJson(Map<dynamic, dynamic> json)
       : value = json['value'],
