@@ -1,18 +1,26 @@
+## 1.0.0
+
+* Added `hasPermissions` method.
+* Added `revokePermissions` method.
+*  **BREAKING CHANGE** `dateFrom` and `dateTo` are now named parameters.
+* Added named `limit` parameter.
+* Updated README
+
 ## 0.0.6
 
 * Added data source to FitData.
-
+  
 ## 0.0.5
 
-* Added distance walked, calories burned and water drank data types. 
+* Added distance walked, calories burned and water drank data types.
 
 ## 0.0.4
 
-* **BREAKING CHANGE** Migrated to use AndroidX.
+*  **BREAKING CHANGE** Migrated to use AndroidX.
 
 ## 0.0.3
 
-* Added requestPermissions method to ease requesting more than 1 data type. 
+* Added `requestPermissions` method to ease requesting more than 1 data type.
 
 ## 0.0.2
 
