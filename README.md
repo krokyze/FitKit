@@ -50,8 +50,8 @@ void readAll() async {
 
 These are currently available data types and their corresponding GoogleFit/HealthKit types. 
 
-| Data Type | Android (GoogleFit) | iOS (HealthKit) | Unit | 
-| --------------------------: | ----------------- | ----------------- | -------------- |
+| Data Type | Android (GoogleFit) | iOS (HealthKit) | Unit |
+| --------: | ------------------- | --------------- | ---- |
 | **HEART_RATE** | [TYPE_HEART_RATE_BPM](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_HEART_RATE_BPM) | [heartRate](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615138-heartrate) | _count/min_ |
 | **STEP_COUNT** | [TYPE_STEP_COUNT_DELTA](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_STEP_COUNT_DELTA) | [stepCount](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615548-stepcount) | _count_ |
 | **HEIGHT** | [TYPE_HEIGHT](https://developers.google.com/android/reference/com/google/android/gms/fitness/data/DataType.html#TYPE_HEIGHT) | [height](https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier/1615039-height) | _meter_ |
