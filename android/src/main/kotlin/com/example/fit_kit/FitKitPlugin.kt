@@ -7,9 +7,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataPoint
+import com.google.android.gms.fitness.data.DataSet
 import com.google.android.gms.fitness.data.Field
+import com.google.android.gms.fitness.data.Session
 import com.google.android.gms.fitness.request.DataReadRequest
+import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import com.google.android.gms.fitness.result.SessionReadResponse
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -72,7 +76,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
 
     private fun hasPermissions(request: PermissionsRequest, result: Result) {
         val options = FitnessOptions.builder()
-                .addDataTypes(request.dataTypes)
+                .addDataTypes(request.types.map { it.dataType })
                 .build()
 
         if (hasOAuthPermission(options)) {
@@ -84,7 +88,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
 
     private fun requestPermissions(request: PermissionsRequest, result: Result) {
         val options = FitnessOptions.builder()
-                .addDataTypes(request.dataTypes)
+                .addDataTypes(request.types.map { it.dataType })
                 .build()
 
         requestOAuthPermissions(options, {
@@ -126,13 +130,16 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 }
     }
 
-    private fun read(request: ReadRequest, result: Result) {
+    private fun read(request: ReadRequest<*>, result: Result) {
         val options = FitnessOptions.builder()
-                .addDataType(request.dataType)
+                .addDataType(request.type.dataType)
                 .build()
 
         requestOAuthPermissions(options, {
-            readSample(request, result)
+            when (request) {
+                is ReadRequest.Sample -> readSample(request, result)
+                is ReadRequest.Activity -> readSession(request, result)
+            }
         }, {
             result.error(TAG, "User denied permission access", null)
         })
@@ -166,11 +173,11 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
         return GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(registrar.context()), fitnessOptions)
     }
 
-    private fun readSample(request: ReadRequest, result: Result) {
+    private fun readSample(request: ReadRequest<Type.Sample>, result: Result) {
         Log.d(TAG, "readSample: ${request.type}")
 
         val readRequest = DataReadRequest.Builder()
-                .read(request.dataType)
+                .read(request.type.dataType)
                 .also { builder ->
                     when (request.limit != null) {
                         true -> builder.setLimit(request.limit)
@@ -199,19 +206,69 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
     @Suppress("IMPLICIT_CAST_TO_ANY")
     private fun dataPointToMap(dataPoint: DataPoint): Map<String, Any> {
         val field = dataPoint.dataType.fields.first()
+        val source = dataPoint.originalDataSource.streamName
 
-        val map = mutableMapOf<String, Any>()
-        map["value"] = dataPoint.getValue(field).let { value ->
-            when (value.format) {
-                Field.FORMAT_FLOAT -> value.asFloat()
-                Field.FORMAT_INT32 -> value.asInt()
-                else -> TODO("for future fields")
-            }
-        }
-        map["date_from"] = dataPoint.getStartTime(TimeUnit.MILLISECONDS)
-        map["date_to"] = dataPoint.getEndTime(TimeUnit.MILLISECONDS)
-        map["source"] = dataPoint.originalDataSource.streamName
-        map["user_entered"] = dataPoint.originalDataSource.streamName == "user_input"
-        return map
+        return mapOf(
+                "value" to dataPoint.getValue(field).let { value ->
+                    when (value.format) {
+                        Field.FORMAT_FLOAT -> value.asFloat()
+                        Field.FORMAT_INT32 -> value.asInt()
+                        else -> TODO("for future fields")
+                    }
+                },
+                "date_from" to dataPoint.getStartTime(TimeUnit.MILLISECONDS),
+                "date_to" to dataPoint.getEndTime(TimeUnit.MILLISECONDS),
+                "source" to source,
+                "user_entered" to (source == "user_input")
+        )
+    }
+
+    private fun readSession(request: ReadRequest<Type.Activity>, result: Result) {
+        Log.d(TAG, "readSession: ${request.type.activity}")
+
+        val readRequest = SessionReadRequest.Builder()
+                .read(request.type.dataType)
+                .setTimeInterval(request.dateFrom.time, request.dateTo.time, TimeUnit.MILLISECONDS)
+                .readSessionsFromAllApps()
+                .enableServerQueries()
+                .build()
+
+        Fitness.getSessionsClient(registrar.context(), GoogleSignIn.getLastSignedInAccount(registrar.context())!!)
+                .readSession(readRequest)
+                .addOnSuccessListener { response -> onSuccess(request, response, result) }
+                .addOnFailureListener { e -> result.error(TAG, e.message, null) }
+                .addOnCanceledListener { result.error(TAG, "GoogleFit Cancelled", null) }
+    }
+
+    private fun onSuccess(request: ReadRequest<Type.Activity>, response: SessionReadResponse, result: Result) {
+        response.sessions.filter { request.type.activity == it.activity }
+                .let { list ->
+                    when (request.limit != null) {
+                        true -> list.takeLast(request.limit)
+                        else -> list
+                    }
+                }
+                .map { session -> sessionToMap(session, response.getDataSet(session)) }
+                .let(result::success)
+    }
+
+    private fun sessionToMap(session: Session, dataSets: List<DataSet>): Map<String, Any> {
+        // from all data points find the top used streamName
+        val source = dataSets.asSequence()
+                .filterNot { it.isEmpty }
+                .flatMap { it.dataPoints.asSequence() }
+                .filterNot { it.originalDataSource.streamName.isNullOrEmpty() }
+                .groupingBy { it.originalDataSource.streamName }
+                .eachCount()
+                .maxBy { it.value }
+                ?.key ?: session.name ?: ""
+
+        return mapOf(
+                "value" to session.getValue(),
+                "date_from" to session.getStartTime(TimeUnit.MILLISECONDS),
+                "date_to" to session.getEndTime(TimeUnit.MILLISECONDS),
+                "source" to source,
+                "user_entered" to (source == "user_input")
+        )
     }
 }

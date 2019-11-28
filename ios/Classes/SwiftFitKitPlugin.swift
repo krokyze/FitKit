@@ -132,7 +132,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
         let query = HKSampleQuery(sampleType: request.sampleType, predicate: predicate, limit: request.limit ?? HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
             _, samplesOrNil, error in
 
-            guard var samples = samplesOrNil as? [HKQuantitySample] else {
+            guard var samples = samplesOrNil else {
                 result(FlutterError(code: self.TAG, message: "Results are null", details: error))
                 return
             }
@@ -145,7 +145,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
             print(samples)
             result(samples.map { sample -> NSDictionary in
                 [
-                    "value": sample.quantity.doubleValue(for: request.unit),
+                    "value": self.readValue(sample: sample, unit: request.unit),
                     "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
                     "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
                     "source": self.readSource(sample: sample),
@@ -156,7 +156,17 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
         healthStore!.execute(query)
     }
 
-    private func readSource(sample: HKQuantitySample) -> String {
+    private func readValue(sample: HKSample, unit: HKUnit) -> Any {
+        if let sample = sample as? HKQuantitySample {
+            return sample.quantity.doubleValue(for: unit)
+        } else if let sample = sample as? HKCategorySample {
+            return sample.value
+        }
+
+        return -1
+    }
+
+    private func readSource(sample: HKSample) -> String {
         if #available(iOS 9, *) {
             return sample.sourceRevision.source.name;
         }

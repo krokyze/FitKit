@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Added sleep data type.
+
 ## 1.0.1
 
 * Added `userEntered` to FitData.
