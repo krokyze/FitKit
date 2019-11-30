@@ -8,13 +8,13 @@ abstract class ReadRequest<T : Type> private constructor(
         val dateFrom: Date,
         val dateTo: Date,
         val limit: Int?,
-        val ignoreManualData: Boolean
+        val ignoreManualData: Boolean?
 ) {
 
-    class Sample(type: Type.Sample, dateFrom: Date, dateTo: Date, limit: Int?, ignoreManualData: Boolean)
+    class Sample(type: Type.Sample, dateFrom: Date, dateTo: Date, limit: Int?, ignoreManualData: Boolean?)
         : ReadRequest<Type.Sample>(type, dateFrom, dateTo, limit, ignoreManualData)
 
-    class Activity(type: Type.Activity, dateFrom: Date, dateTo: Date, limit: Int?, ignoreManualData: Boolean)
+    class Activity(type: Type.Activity, dateFrom: Date, dateTo: Date, limit: Int?, ignoreManualData: Boolean?)
         : ReadRequest<Type.Activity>(type, dateFrom, dateTo, limit, ignoreManualData)
 
     companion object {
@@ -27,7 +27,7 @@ abstract class ReadRequest<T : Type> private constructor(
             val dateTo = safeLong(call, "date_to")?.let { Date(it) }
                     ?: throw Exception("date_to is not defined")
             val limit = call.argument<Int?>("limit")
-            val ignoreManualData = call.argument<Boolean>("ignoreManualData")
+            val ignoreManualData = call.argument<Boolean?>("ignoreManualData")
 
             return when (type) {
                 is Type.Sample -> Sample(type, dateFrom, dateTo, limit, ignoreManualData)

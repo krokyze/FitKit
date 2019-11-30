@@ -200,7 +200,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 .filterNot { it.isEmpty }
                 .flatMap { it.dataPoints }
 
-        if (request.ignoreManualData) {
+        if (request.ignoreManualData != null && request.ignoreManualData) {
             dataPoints = dataPoints.filterNot { dataPoint ->
                 dataPoint.originalDataSource.streamName.contains("user_input") }
         }
