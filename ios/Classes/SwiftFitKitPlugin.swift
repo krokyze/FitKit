@@ -125,11 +125,15 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
 
     private func readSample(request: ReadRequest, result: @escaping FlutterResult) {
         print("readSample: \(request.type)")
-
-        let predicate = HKQuery.predicateForSamples(withStart: request.dateFrom, end: request.dateTo, options: .strictStartDate)
+        
+        var predicates = [HKQuery.predicateForSamples(withStart: request.dateFrom, end: request.dateTo, options: .strictStartDate)]
+        if (request.ignoreManualData) {
+            predicates.append(NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered))
+        }
+        let compoundPredicate = NSCompoundPredicate(type: .and, subpredicates: predicates)
         let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: request.limit == nil)
 
-        let query = HKSampleQuery(sampleType: request.sampleType, predicate: predicate, limit: request.limit ?? HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
+        let query = HKSampleQuery(sampleType: request.sampleType, predicate: compoundPredicate, limit: request.limit ?? HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
             _, samplesOrNil, error in
 
             guard var samples = samplesOrNil else {

@@ -190,16 +190,22 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
 
         Fitness.getHistoryClient(registrar.context(), GoogleSignIn.getLastSignedInAccount(registrar.context())!!)
                 .readData(readRequest)
-                .addOnSuccessListener { response -> onSuccess(response, result) }
+                .addOnSuccessListener { response -> onSuccess(request, response, result) }
                 .addOnFailureListener { e -> result.error(TAG, e.message, null) }
                 .addOnCanceledListener { result.error(TAG, "GoogleFit Cancelled", null) }
     }
 
-    private fun onSuccess(response: DataReadResponse, result: Result) {
-        (response.dataSets + response.buckets.flatMap { it.dataSets })
+    private fun onSuccess(request: ReadRequest<Type.Sample>, response: DataReadResponse, result: Result) {
+        var dataPoints = (response.dataSets + response.buckets.flatMap { it.dataSets })
                 .filterNot { it.isEmpty }
                 .flatMap { it.dataPoints }
-                .map(::dataPointToMap)
+
+        if (request.ignoreManualData) {
+            dataPoints = dataPoints.filterNot { dataPoint ->
+                dataPoint.originalDataSource.streamName.contains("user_input") }
+        }
+
+        dataPoints.map(::dataPointToMap)
                 .let(result::success)
     }
 
