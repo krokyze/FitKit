@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
       } else {
         for (DataType type in DataType.values) {
           results[type] = await FitKit.read(
-            type,
+            type: type,
             dateFrom: _dateFrom,
             dateTo: _dateTo,
             limit: _limit,
