@@ -18,6 +18,18 @@ extension HKSampleType {
                 return HKSampleType.quantityType(forIdentifier: .heartRate)
             case "step_count":
                 return HKSampleType.quantityType(forIdentifier: .stepCount)
+            case "stand_time":
+                if #available(iOS 13.0, *) {
+                     return HKSampleType.quantityType(forIdentifier: .appleStandTime)
+                } else {
+                    return nil
+                } 
+            case "exercise_time":
+                if #available(iOS 9.3, *) {
+                     return HKSampleType.quantityType(forIdentifier: .appleExerciseTime)
+                } else {
+                    return nil
+                }  
             case "height":
                 return HKSampleType.quantityType(forIdentifier: .height)
             case "weight":
@@ -64,6 +76,10 @@ extension HKUnit {
                 return HKUnit.liter()
             case "sleep":
                 return HKUnit.minute() // this is ignored
+            case "stand_time":
+                return HKUnit.minute()
+            case "exercise_time":
+                return HKUnit.minute()
             default:
                 return nil
             }
