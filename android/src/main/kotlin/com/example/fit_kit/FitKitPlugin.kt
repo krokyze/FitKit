@@ -42,7 +42,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
 
     companion object {
         private const val TAG = "FitKit"
-        private const val GOOGLE_FIT_REQUEST_CODE = 80085
+        private const val GOOGLE_FIT_REQUEST_CODE = 8008
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
