@@ -1,3 +1,8 @@
+## 1.1.1
+
+* Added STAND_TIME, EXERCISE_TIME data types for iOS.
+* Fixed Android requestCode too big.
+
 ## 1.1.0
 
 * Added sleep data type.
