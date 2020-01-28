@@ -20,7 +20,7 @@ extension HKSampleType {
                 return HKSampleType.quantityType(forIdentifier: .stepCount)
             case "stand_time":
                 if #available(iOS 13.0, *) {
-                     return HKSampleType.quantityType(forIdentifier: .appleStandTime)
+                     return HKSampleType.categoryType(forIdentifier: .appleStandHour)
                 } else {
                     return nil
                 } 
