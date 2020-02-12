@@ -5,13 +5,13 @@ PODS:
 
 DEPENDENCIES:
   - fit_kit (from `.symlinks/plugins/fit_kit/ios`)
-  - Flutter (from `.symlinks/flutter/ios`)
+  - Flutter (from `.symlinks/flutter/ios-release`)
 
 EXTERNAL SOURCES:
   fit_kit:
     :path: ".symlinks/plugins/fit_kit/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios"
+    :path: ".symlinks/flutter/ios-release"
 
 SPEC CHECKSUMS:
   fit_kit: 7643191161673bcd32863ae3f10baed6ce55c7c0
