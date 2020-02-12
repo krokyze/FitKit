@@ -54,6 +54,12 @@ class FitKit {
         return "heart_rate";
       case DataType.RESTING_HEART_RATE:
         return "resting_heart_rate";
+      case DataType.IRREGULAR_HEART_RHYTHM_EVENT:
+        return "irregular_heart_rhythm_event";
+      case DataType.HIGH_HEART_RATE_EVENT:
+        return "high_heart_rate_event";
+      case DataType.LOW_HEART_RATE_EVENT:
+        return "low_heart_rate_event";
       case DataType.STEP_COUNT:
         return "step_count";
       case DataType.HEIGHT:
@@ -80,6 +86,9 @@ class FitKit {
 enum DataType {
   HEART_RATE,
   RESTING_HEART_RATE,
+  IRREGULAR_HEART_RHYTHM_EVENT,
+  HIGH_HEART_RATE_EVENT,
+  LOW_HEART_RATE_EVENT,
   STEP_COUNT,
   HEIGHT,
   WEIGHT,

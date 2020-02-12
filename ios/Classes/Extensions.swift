@@ -22,6 +22,24 @@ extension HKSampleType {
                 } else {
                  return nil
                 }
+            case "irregular_heart_rhythm_event":
+                if #available(iOS 12.2, *) {
+                    return HKSampleType.categoryType(forIdentifier: .irregularHeartRhythmEvent)
+                } else {
+                    return nil
+                }
+            case "high_heart_rate_event":
+                if #available(iOS 12.2, *) {
+                    return HKSampleType.categoryType(forIdentifier: .highHeartRateEvent)
+                } else {
+                    return nil
+            }
+            case "low_heart_rate_event":
+                if #available(iOS 12.2, *) {
+                    return HKSampleType.categoryType(forIdentifier: .lowHeartRateEvent)
+                } else {
+                    return nil
+            }
             case "step_count":
                 return HKSampleType.quantityType(forIdentifier: .stepCount)
             case "stand_time":
@@ -70,6 +88,12 @@ extension HKUnit {
                 return HKUnit.init(from: "count/min")
             case "resting_heart_rate":
                 return HKUnit.init(from: "count/min")
+            case "irregular_heart_rhythm_event":
+                return HKUnit.count() //Ignored
+            case "high_heart_rate_event":
+                return HKUnit.count() //Ignored
+            case "low_heart_rate_event":
+                return HKUnit.count() //Ignored
             case "step_count":
                 return HKUnit.count()
             case "height":
