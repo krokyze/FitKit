@@ -52,6 +52,8 @@ class FitKit {
     switch (type) {
       case DataType.HEART_RATE:
         return "heart_rate";
+      case DataType.RESTING_HEART_RATE:
+        return "resting_heart_rate";
       case DataType.STEP_COUNT:
         return "step_count";
       case DataType.HEIGHT:
@@ -77,6 +79,7 @@ class FitKit {
 
 enum DataType {
   HEART_RATE,
+  RESTING_HEART_RATE,
   STEP_COUNT,
   HEIGHT,
   WEIGHT,
