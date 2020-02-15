@@ -133,7 +133,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
             _, samplesOrNil, error in
 
             guard var samples = samplesOrNil else {
-                result(FlutterError(code: self.TAG, message: "Results are null", details: error))
+                result(FlutterError(code: self.TAG, message: "Results are null", details: ["debugDescription": error.debugDescription]))
                 return
             }
 

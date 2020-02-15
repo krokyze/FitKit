@@ -1,3 +1,8 @@
+## 1.1.2
+
+* Fixed crash when error occurs on iOS.
+* Update example's Dart SDK constraints.
+
 ## 1.1.1
 
 * Added STAND_TIME, EXERCISE_TIME data types for iOS.
