@@ -67,6 +67,34 @@ class _MyAppState extends State<MyApp> {
     setState(() {});
   }
 
+   Future<void> computeCollectionQueryTest() async {
+    results.clear();
+
+    try {
+      permissions = await FitKit.requestPermissions(DataType.values);
+      if (!permissions) {
+        result = 'requestPermissions: failed';
+      } else {
+
+          var results = await FitKit.computeCollectionQuery(
+            DataType.STEP_COUNT,
+            dateFrom: _dateFrom,
+            dateTo: _dateTo,
+            limit: _limit,
+            interval: 1,
+            aggregationOption: CollectionOptions.CUMULATIVE_SUM
+          );
+        
+
+        result = 'Collection Results: $results';
+      }
+    } catch (e) {
+      result = 'readAll: $e';
+    }
+
+    setState(() {});
+  }
+
   Future<void> revokePermissions() async {
     results.clear();
 
@@ -203,8 +231,8 @@ class _MyAppState extends State<MyApp> {
           child: FlatButton(
             color: Theme.of(context).accentColor,
             textColor: Colors.white,
-            onPressed: () => read(),
-            child: Text('Read'),
+            onPressed: () => computeCollectionQueryTest(),
+            child: Text('Compute'),
           ),
         ),
         Padding(padding: EdgeInsets.symmetric(horizontal: 4)),
