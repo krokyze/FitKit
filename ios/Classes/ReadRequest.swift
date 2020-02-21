@@ -8,7 +8,6 @@ class ReadRequest {
     let type: String
     let sampleType: HKSampleType
     let unit: HKUnit
-
     let dateFrom: Date
     let dateTo: Date
     let limit: Int?

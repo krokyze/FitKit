@@ -36,6 +36,9 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
             } else if (call.method == "read") {
                 let request = try ReadRequest.fromCall(call: call)
                 read(request: request, result: result)
+            } else if (call.method == "computeCollectionQuery") {
+                let request = try CollectionQueryRequest.fromCall(call: call)
+                performCollectionQuery(request: request, result: result)
             } else {
                 result(FlutterMethodNotImplemented)
             }
@@ -153,6 +156,61 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
                 ]
             })
         }
+        healthStore!.execute(query)
+    }
+    
+    func performCollectionQuery(request: CollectionQueryRequest, result: @escaping FlutterResult) {
+
+        
+        var interval = DateComponents()
+        interval.minute = request.interval ?? 1 //Defaults to 1 minute interval
+        
+        let calendar = Calendar.current
+        let anchorDate = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
+        
+        let predicate = HKQuery.predicateForSamples(withStart: request.dateFrom
+            , end: request.dateTo, options: .strictStartDate)
+        
+        
+        guard let type = request.sampleType as? HKQuantityType else {
+            result(FlutterError(code: TAG, message: "Not supported", details: nil))
+            return
+        }
+        
+                
+        let query = HKStatisticsCollectionQuery.init(quantityType: type,
+                                                     quantitySamplePredicate: predicate,
+                                                     options: request.option,
+                                                     anchorDate: anchorDate,
+                                                     intervalComponents: interval)
+        
+        
+        query.initialResultsHandler = {
+            query, results, error in
+            
+            //let startDate = calendar.startOfDay(for: Date())
+            
+            var output: [NSDictionary] = [NSDictionary]()
+            
+            results?.enumerateStatistics(from: request.dateFrom,
+                                         to: request.dateTo, with: { (result, stop) in
+                                            
+                                            print("Time: \(result.startDate), \(result.sumQuantity()?.doubleValue(for: HKUnit.count()) ?? 0)")
+                                            
+                                            let sample: NSDictionary =  [
+                                                "value": result.sumQuantity()?.doubleValue(for: request.unit) ?? 0,
+                                                "date_from": Int(result.startDate.timeIntervalSince1970 * 1000),
+                                                "date_to": Int(result.endDate.timeIntervalSince1970 * 1000),
+                                                "source": "Collection Query",
+                                                "user_entered": false
+                                            ]
+                                            
+                                            output.append(sample)
+            })
+            
+            result(output)
+        }
+        
         healthStore!.execute(query)
     }
 

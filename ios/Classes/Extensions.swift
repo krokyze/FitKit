@@ -121,3 +121,21 @@ extension HKUnit {
         return unit
     }
 }
+
+extension HKStatisticsOptions {
+    public static func fromDartAggregationOption(aggregateOption: String) throws -> HKStatisticsOptions {
+        guard let option: HKStatisticsOptions = {
+            switch (aggregateOption) {
+                case "cumulativeSum":
+                    return HKStatisticsOptions.cumulativeSum
+                case "discreteAverage":
+                    return HKStatisticsOptions.discreteAverage
+                default:
+                    return nil
+            }
+        } () else {
+            throw "type \"\(aggregateOption)\" is not supported";
+        }
+        return option
+    }
+}
