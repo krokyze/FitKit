@@ -34,6 +34,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
         registrar.addActivityResultListener { requestCode, resultCode, _ ->
             if (requestCode == GOOGLE_FIT_REQUEST_CODE) {
                 oAuthPermissionListeners.forEach { it.onOAuthPermissionsResult(resultCode) }
+                oAuthPermissionListeners.clear()
                 return@addActivityResultListener true
             }
             return@addActivityResultListener false
@@ -158,7 +159,6 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 } else {
                     onError()
                 }
-                oAuthPermissionListeners.remove(this)
             }
         })
 
