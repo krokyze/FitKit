@@ -59,7 +59,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
     */
     private func hasPermissions(request: PermissionsRequest, result: @escaping FlutterResult) {
         if #available(iOS 12.0, *) {
-            healthStore!.getRequestStatusForAuthorization(toShare: [], read: Set(request.sampleTypes)) { (status, error) in
+            healthStore!.getRequestStatusForAuthorization(toShare: [], read: Set(request.quantityTypes)) { (status, error) in
                 guard error == nil else {
                     result(FlutterError(code: self.TAG, message: "hasPermissions", details: error))
                     return
@@ -73,7 +73,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
                 result(true)
             }
         } else {
-            let authorized = request.sampleTypes.map {
+            let authorized = request.quantityTypes.map {
                         healthStore!.authorizationStatus(for: $0)
                     }
                     .allSatisfy {
@@ -84,7 +84,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
     }
 
     private func requestPermissions(request: PermissionsRequest, result: @escaping FlutterResult) {
-        requestAuthorization(sampleTypes: request.sampleTypes) { success, error in
+        requestAuthorization(quantityTypes: request.quantityTypes) { success, error in
             guard success else {
                 result(false)
                 return
@@ -102,7 +102,7 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
     }
 
     private func read(request: ReadRequest, result: @escaping FlutterResult) {
-        requestAuthorization(sampleTypes: [request.sampleType]) { success, error in
+        requestAuthorization(quantityTypes: [request.quantityType]) { success, error in
             guard success else {
                 result(error)
                 return
@@ -112,8 +112,8 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func requestAuthorization(sampleTypes: Array<HKSampleType>, completion: @escaping (Bool, FlutterError?) -> Void) {
-        healthStore!.requestAuthorization(toShare: nil, read: Set(sampleTypes)) { (success, error) in
+    private func requestAuthorization(quantityTypes: Array<HKQuantityType>, completion: @escaping (Bool, FlutterError?) -> Void) {
+        healthStore!.requestAuthorization(toShare: nil, read: Set(quantityTypes)) { (success, error) in
             guard success else {
                 completion(false, FlutterError(code: self.TAG, message: "Error \(error?.localizedDescription ?? "empty")", details: nil))
                 return
@@ -126,51 +126,57 @@ public class SwiftFitKitPlugin: NSObject, FlutterPlugin {
     private func readSample(request: ReadRequest, result: @escaping FlutterResult) {
         print("readSample: \(request.type)")
 
-        let predicate = HKQuery.predicateForSamples(withStart: request.dateFrom, end: request.dateTo, options: .strictStartDate)
-        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: request.limit == nil)
+        let predicate = HKQuery.predicateForSamples(withStart: request.dateFrom,
+                                                    end: request.dateTo,
+                                                    options: .strictStartDate)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate,
+                                              ascending: request.limit == nil)
 
-        let query = HKSampleQuery(sampleType: request.sampleType, predicate: predicate, limit: request.limit ?? HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) {
-            _, samplesOrNil, error in
+        let calendar = Calendar.current
+        let anchorComponents = calendar.dateComponents([.day, .month, .year, .weekday],
+                                                       from: request.dateFrom)
 
-            guard var samples = samplesOrNil else {
-                result(FlutterError(code: self.TAG, message: "Results are null", details: error))
-                return
+        guard let anchorDate = calendar.date(from: anchorComponents) else {
+            fatalError("*** unable to create a valid date from the given components ***")
+        }
+
+        var interval = DateComponents()
+        interval.day = 1
+
+        let query = HKStatisticsCollectionQuery(quantityType: request.quantityType,
+                                                quantitySamplePredicate: predicate,
+                                                options: .cumulativeSum,
+                                                anchorDate: anchorDate,
+                                                intervalComponents: interval)
+        query.initialResultsHandler =  { (query, statisticsCollection, error) in
+            guard var statisticsCollection = statisticsCollection?.statistics() else {
+               result(FlutterError(code: self.TAG, message: "Results are null", details: error))
+               return
             }
-
             if (request.limit != nil) {
-                // if limit is used sort back to ascending
-                samples = samples.sorted(by: { $0.startDate.compare($1.startDate) == .orderedAscending })
+               // if limit is used sort back to ascending
+                statisticsCollection = statisticsCollection
+                .sorted(by: { $0.startDate.compare($1.startDate) == .orderedAscending })
             }
 
-            print(samples)
-            result(samples.map { sample -> NSDictionary in
-                [
-                    "value": self.readValue(sample: sample, unit: request.unit),
-                    "date_from": Int(sample.startDate.timeIntervalSince1970 * 1000),
-                    "date_to": Int(sample.endDate.timeIntervalSince1970 * 1000),
-                    "source": self.readSource(sample: sample),
-                    "user_entered": sample.metadata?[HKMetadataKeyWasUserEntered] as? Bool == true
-                ]
-            })
+            print(statisticsCollection)
+            result(statisticsCollection.map { statistics -> NSDictionary in
+               [
+                   "value": self.readValue(statistics: statistics, unit: request.unit),
+                   "date_from": Int(statistics.startDate.timeIntervalSince1970 * 1000),
+                   "date_to": Int(statistics.endDate.timeIntervalSince1970 * 1000),
+                   "source": "HKQuantityType",
+               ]
+            } ?? [])
         }
         healthStore!.execute(query)
     }
 
-    private func readValue(sample: HKSample, unit: HKUnit) -> Any {
-        if let sample = sample as? HKQuantitySample {
-            return sample.quantity.doubleValue(for: unit)
-        } else if let sample = sample as? HKCategorySample {
-            return sample.value
+    private func readValue(statistics: HKStatistics, unit: HKUnit) -> Any {
+        if let quatity = statistics.sumQuantity() {
+            return quatity.doubleValue(for: unit)
+        } else {
+            return -1
         }
-
-        return -1
-    }
-
-    private func readSource(sample: HKSample) -> String {
-        if #available(iOS 9, *) {
-            return sample.sourceRevision.source.name;
-        }
-
-        return sample.source.name;
     }
 }

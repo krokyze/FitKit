@@ -6,11 +6,11 @@ import HealthKit
 
 class PermissionsRequest {
     let types: Array<String>
-    let sampleTypes: Array<HKSampleType>
+    let quantityTypes: Array<HKQuantityType>
 
-    private init(types: Array<String>, sampleTypes: Array<HKSampleType>) {
+    private init(types: Array<String>, quantityTypes: Array<HKQuantityType>) {
         self.types = types;
-        self.sampleTypes = sampleTypes
+        self.quantityTypes = quantityTypes
     }
 
     static func fromCall(call: FlutterMethodCall) throws -> PermissionsRequest {
@@ -19,10 +19,10 @@ class PermissionsRequest {
             throw "invalid call arguments \(call.arguments)";
         }
 
-        let sampleTypes = try types.map { type -> HKSampleType in
-            try HKSampleType.fromDartType(type: type)
+        let quantityTypes = try types.map { type -> HKQuantityType in
+            try HKQuantityType.fromDartType(type: type)
         }
 
-        return PermissionsRequest(types: types, sampleTypes: sampleTypes)
+        return PermissionsRequest(types: types, quantityTypes: quantityTypes)
     }
 }

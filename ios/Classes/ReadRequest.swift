@@ -6,16 +6,16 @@ import HealthKit
 
 class ReadRequest {
     let type: String
-    let sampleType: HKSampleType
+    let quantityType: HKQuantityType
     let unit: HKUnit
 
     let dateFrom: Date
     let dateTo: Date
     let limit: Int?
 
-    private init(type: String, sampleType: HKSampleType, unit: HKUnit, dateFrom: Date, dateTo: Date, limit: Int?) {
+    private init(type: String, quantityType: HKQuantityType, unit: HKUnit, dateFrom: Date, dateTo: Date, limit: Int?) {
         self.type = type;
-        self.sampleType = sampleType
+        self.quantityType = quantityType
         self.unit = unit
         self.dateFrom = dateFrom
         self.dateTo = dateTo
@@ -30,12 +30,12 @@ class ReadRequest {
             throw "invalid call arguments \(call.arguments)";
         }
 
-        let sampleType = try HKSampleType.fromDartType(type: type)
+        let quantityType = try HKQuantityType.fromDartType(type: type)
         let unit = try HKUnit.fromDartType(type: type)
         let dateFrom = Date(timeIntervalSince1970: dateFromEpoch.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: dateToEpoch.doubleValue / 1000)
         let limit = arguments["limit"] as? Int
 
-        return ReadRequest(type: type, sampleType: sampleType, unit: unit, dateFrom: dateFrom, dateTo: dateTo, limit: limit)
+        return ReadRequest(type: type, quantityType: quantityType, unit: unit, dateFrom: dateFrom, dateTo: dateTo, limit: limit)
     }
 }

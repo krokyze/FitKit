@@ -10,49 +10,47 @@ extension String: LocalizedError {
     }
 }
 
-extension HKSampleType {
-    public static func fromDartType(type: String) throws -> HKSampleType {
-        guard let sampleType: HKSampleType = {
+extension HKQuantityType {
+    public static func fromDartType(type: String) throws -> HKQuantityType {
+        guard let quantityType: HKQuantityType = {
             switch type {
             case "heart_rate":
-                return HKSampleType.quantityType(forIdentifier: .heartRate)
+                return HKQuantityType.quantityType(forIdentifier: .heartRate)
             case "step_count":
-                return HKSampleType.quantityType(forIdentifier: .stepCount)
+                return HKQuantityType.quantityType(forIdentifier: .stepCount)
             case "stand_time":
                 if #available(iOS 13.0, *) {
-                     return HKSampleType.quantityType(forIdentifier: .appleStandTime)
+                     return HKQuantityType.quantityType(forIdentifier: .appleStandTime)
                 } else {
                     return nil
                 } 
             case "exercise_time":
                 if #available(iOS 9.3, *) {
-                     return HKSampleType.quantityType(forIdentifier: .appleExerciseTime)
+                     return HKQuantityType.quantityType(forIdentifier: .appleExerciseTime)
                 } else {
                     return nil
                 }  
             case "height":
-                return HKSampleType.quantityType(forIdentifier: .height)
+                return HKQuantityType.quantityType(forIdentifier: .height)
             case "weight":
-                return HKSampleType.quantityType(forIdentifier: .bodyMass)
+                return HKQuantityType.quantityType(forIdentifier: .bodyMass)
             case "distance":
-                return HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)
+                return HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning)
             case "energy":
-                return HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)
+                return HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)
             case "water":
                 if #available(iOS 9, *) {
-                    return HKSampleType.quantityType(forIdentifier: .dietaryWater)
+                    return HKQuantityType.quantityType(forIdentifier: .dietaryWater)
                 } else {
                     return nil
                 }
-            case "sleep":
-                return HKSampleType.categoryType(forIdentifier: .sleepAnalysis)
             default:
                 return nil
             }
         }() else {
             throw "type \"\(type)\" is not supported";
         }
-        return sampleType
+        return quantityType
     }
 }
 
