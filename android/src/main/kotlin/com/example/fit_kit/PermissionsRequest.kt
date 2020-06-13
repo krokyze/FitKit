@@ -8,7 +8,7 @@ class PermissionsRequest private constructor(val types: List<Type>) {
         @Throws
         fun fromCall(call: MethodCall): PermissionsRequest {
             val types = call.argument<List<String>>("types")
-                    ?.map { type -> type.fromDartType() }
+                    ?.mapNotNull { type -> type.fromDartType() }
                     ?: throw Exception("types is not defined")
 
             return PermissionsRequest(types)
