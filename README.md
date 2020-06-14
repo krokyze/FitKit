@@ -23,11 +23,15 @@ If you're using more than one DataType it's advised to call requestPermissions w
 import 'package:fit_kit/fit_kit.dart';
 
 void read() async {
-  final results = await FitKit.read(
-    DataType.HEART_RATE,
-    dateFrom: DateTime.now().subtract(Duration(days: 5)),
-    dateTo: DateTime.now(),
-  );
+  try {
+    final results = await FitKit.read(
+      DataType.HEART_RATE,
+      dateFrom: DateTime.now().subtract(Duration(days: 5)),
+      dateTo: DateTime.now(),
+    );
+  } on UnsupportedException catch (e) {
+    // thrown in case e.dataType is unsupported
+  }
 }
 
 void readLast() async {
