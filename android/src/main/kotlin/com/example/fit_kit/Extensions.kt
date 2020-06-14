@@ -5,8 +5,7 @@ import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Session
 
-@Throws
-fun String.fromDartType(): Type {
+fun String.fromDartType(): Type? {
     return when (this) {
         "heart_rate" -> Type.Sample(DataType.TYPE_HEART_RATE_BPM)
         "step_count" -> Type.Sample(DataType.TYPE_STEP_COUNT_DELTA)
@@ -16,7 +15,7 @@ fun String.fromDartType(): Type {
         "energy" -> Type.Sample(DataType.TYPE_CALORIES_EXPENDED)
         "water" -> Type.Sample(DataType.TYPE_HYDRATION)
         "sleep" -> Type.Activity(FitnessActivities.SLEEP)
-        else -> throw Exception("type $this is not supported")
+        else -> null
     }
 }
 
@@ -35,3 +34,5 @@ fun Session.getValue(): Int {
         else -> throw Exception("session ${this.activity} is not supported")
     }
 }
+
+class UnsupportedException(message: String) : Exception(message)

@@ -19,8 +19,8 @@ class PermissionsRequest {
             throw "invalid call arguments \(call.arguments)";
         }
 
-        let sampleTypes = try types.map { type -> HKSampleType in
-            try HKSampleType.fromDartType(type: type)
+        let sampleTypes = types.compactMap { type -> HKSampleType? in
+            HKSampleType.fromDartType(type: type)?.sampleType
         }
 
         return PermissionsRequest(types: types, sampleTypes: sampleTypes)

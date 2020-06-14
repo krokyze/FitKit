@@ -30,8 +30,11 @@ class ReadRequest {
             throw "invalid call arguments \(call.arguments)";
         }
 
-        let sampleType = try HKSampleType.fromDartType(type: type)
-        let unit = try HKUnit.fromDartType(type: type)
+        guard let values = HKSampleType.fromDartType(type: type),
+              let sampleType = values.sampleType as? HKSampleType,
+              let unit = values.unit as? HKUnit else {
+            throw UnsupportedError(message: "type \(type) is not supported");
+        }
         let dateFrom = Date(timeIntervalSince1970: dateFromEpoch.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: dateToEpoch.doubleValue / 1000)
         let limit = arguments["limit"] as? Int

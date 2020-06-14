@@ -50,12 +50,16 @@ class _MyAppState extends State<MyApp> {
         result = 'requestPermissions: failed';
       } else {
         for (DataType type in DataType.values) {
-          results[type] = await FitKit.read(
-            type,
-            dateFrom: _dateFrom,
-            dateTo: _dateTo,
-            limit: _limit,
-          );
+          try {
+            results[type] = await FitKit.read(
+              type,
+              dateFrom: _dateFrom,
+              dateTo: _dateTo,
+              limit: _limit,
+            );
+          } on UnsupportedException catch (e) {
+            results[e.dataType] = [];
+          }
         }
 
         result = 'readAll: success';

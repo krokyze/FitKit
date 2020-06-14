@@ -11,81 +11,76 @@ extension String: LocalizedError {
 }
 
 extension HKSampleType {
-    public static func fromDartType(type: String) throws -> HKSampleType {
-        guard let sampleType: HKSampleType = {
-            switch type {
-            case "heart_rate":
-                return HKSampleType.quantityType(forIdentifier: .heartRate)
-            case "step_count":
-                return HKSampleType.quantityType(forIdentifier: .stepCount)
-            case "stand_time":
-                if #available(iOS 13.0, *) {
-                     return HKSampleType.quantityType(forIdentifier: .appleStandTime)
-                } else {
-                    return nil
-                } 
-            case "exercise_time":
-                if #available(iOS 9.3, *) {
-                     return HKSampleType.quantityType(forIdentifier: .appleExerciseTime)
-                } else {
-                    return nil
-                }  
-            case "height":
-                return HKSampleType.quantityType(forIdentifier: .height)
-            case "weight":
-                return HKSampleType.quantityType(forIdentifier: .bodyMass)
-            case "distance":
-                return HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning)
-            case "energy":
-                return HKSampleType.quantityType(forIdentifier: .activeEnergyBurned)
-            case "water":
-                if #available(iOS 9, *) {
-                    return HKSampleType.quantityType(forIdentifier: .dietaryWater)
-                } else {
-                    return nil
-                }
-            case "sleep":
-                return HKSampleType.categoryType(forIdentifier: .sleepAnalysis)
-            default:
+    public static func fromDartType(type: String) -> (sampleType: HKSampleType?, unit: HKUnit)? {
+        switch type {
+        case "heart_rate":
+            return (
+                    HKSampleType.quantityType(forIdentifier: .heartRate),
+                    HKUnit.init(from: "count/min")
+            )
+        case "step_count":
+            return (
+                    HKSampleType.quantityType(forIdentifier: .stepCount),
+                    HKUnit.count()
+            )
+        case "stand_time":
+            if #available(iOS 13.0, *) {
+                return (
+                        HKSampleType.quantityType(forIdentifier: .appleStandTime),
+                        HKUnit.minute()
+                )
+            } else {
                 return nil
             }
-        }() else {
-            throw "type \"\(type)\" is not supported";
+        case "exercise_time":
+            if #available(iOS 9.3, *) {
+                return (
+                        HKSampleType.quantityType(forIdentifier: .appleExerciseTime),
+                        HKUnit.minute()
+                )
+            } else {
+                return nil
+            }
+        case "height":
+            return (
+                    HKSampleType.quantityType(forIdentifier: .height),
+                    HKUnit.meter()
+            )
+        case "weight":
+            return (
+                    HKSampleType.quantityType(forIdentifier: .bodyMass),
+                    HKUnit.gramUnit(with: .kilo)
+            )
+        case "distance":
+            return (
+                    HKSampleType.quantityType(forIdentifier: .distanceWalkingRunning),
+                    HKUnit.meter()
+            )
+        case "energy":
+            return (
+                    HKSampleType.quantityType(forIdentifier: .activeEnergyBurned),
+                    HKUnit.kilocalorie()
+            )
+        case "water":
+            if #available(iOS 9, *) {
+                return (
+                        HKSampleType.quantityType(forIdentifier: .dietaryWater),
+                        HKUnit.liter()
+                )
+            } else {
+                return nil
+            }
+        case "sleep":
+            return (
+                    HKSampleType.categoryType(forIdentifier: .sleepAnalysis),
+                    HKUnit.minute() // this is ignored
+            )
+        default:
+            return nil
         }
-        return sampleType
     }
 }
 
-extension HKUnit {
-    public static func fromDartType(type: String) throws -> HKUnit {
-        guard let unit: HKUnit = {
-            switch (type) {
-            case "heart_rate":
-                return HKUnit.init(from: "count/min")
-            case "step_count":
-                return HKUnit.count()
-            case "height":
-                return HKUnit.meter()
-            case "weight":
-                return HKUnit.gramUnit(with: .kilo)
-            case "distance":
-                return HKUnit.meter()
-            case "energy":
-                return HKUnit.kilocalorie()
-            case "water":
-                return HKUnit.liter()
-            case "sleep":
-                return HKUnit.minute() // this is ignored
-            case "stand_time":
-                return HKUnit.minute()
-            case "exercise_time":
-                return HKUnit.minute()
-            default:
-                return nil
-            }
-        }() else {
-            throw "type \"\(type)\" is not supported";
-        }
-        return unit
-    }
+public struct UnsupportedError: Error {
+    let message: String
 }
