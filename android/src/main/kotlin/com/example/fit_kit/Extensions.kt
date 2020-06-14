@@ -34,3 +34,5 @@ fun Session.getValue(): Int {
         else -> throw Exception("session ${this.activity} is not supported")
     }
 }
+
+class UnsupportedException(message: String) : Exception(message)

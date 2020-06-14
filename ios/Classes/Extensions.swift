@@ -80,3 +80,7 @@ extension HKSampleType {
         }
     }
 }
+
+public struct UnsupportedError: Error {
+    let message: String
+}

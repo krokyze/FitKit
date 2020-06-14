@@ -33,7 +33,7 @@ class ReadRequest {
         guard let values = HKSampleType.fromDartType(type: type),
               let sampleType = values.sampleType as? HKSampleType,
               let unit = values.unit as? HKUnit else {
-            throw "type \(type) is not supported";
+            throw UnsupportedError(message: "type \(type) is not supported");
         }
         let dateFrom = Date(timeIntervalSince1970: dateFromEpoch.doubleValue / 1000)
         let dateTo = Date(timeIntervalSince1970: dateToEpoch.doubleValue / 1000)

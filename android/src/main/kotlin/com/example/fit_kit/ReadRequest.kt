@@ -20,7 +20,7 @@ abstract class ReadRequest<T : Type> private constructor(
         @Throws
         fun fromCall(call: MethodCall): ReadRequest<*> {
             val type = call.argument<String>("type")?.let {
-                it.fromDartType() ?: throw Exception("type $it is not supported")
+                it.fromDartType() ?: throw UnsupportedException("type $it is not supported")
             } ?: throw Exception("type is not defined")
             val dateFrom = safeLong(call, "date_from")?.let { Date(it) }
                     ?: throw Exception("date_from is not defined")

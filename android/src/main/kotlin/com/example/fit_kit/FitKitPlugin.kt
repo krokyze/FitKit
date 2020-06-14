@@ -43,6 +43,7 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
 
     companion object {
         private const val TAG = "FitKit"
+        private const val TAG_UNSUPPORTED = "unsupported"
         private const val GOOGLE_FIT_REQUEST_CODE = 8008
 
         @JvmStatic
@@ -70,6 +71,8 @@ class FitKitPlugin(private val registrar: Registrar) : MethodCallHandler {
                 }
                 else -> result.notImplemented()
             }
+        } catch (e: UnsupportedException) {
+            result.error(TAG_UNSUPPORTED, e.message, null)
         } catch (e: Throwable) {
             result.error(TAG, e.message, null)
         }

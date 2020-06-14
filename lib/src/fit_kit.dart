@@ -33,14 +33,23 @@ class FitKit {
     DateTime dateTo,
     int limit,
   }) async {
-    return await _channel.invokeListMethod('read', {
-      "type": _dataTypeToString(type),
-      "date_from": dateFrom?.millisecondsSinceEpoch ?? 1,
-      "date_to": (dateTo ?? DateTime.now()).millisecondsSinceEpoch,
-      "limit": limit,
-    }).then(
-      (response) => response.map((item) => FitData.fromJson(item)).toList(),
-    );
+    return await _channel
+        .invokeListMethod('read', {
+          "type": _dataTypeToString(type),
+          "date_from": dateFrom?.millisecondsSinceEpoch ?? 1,
+          "date_to": (dateTo ?? DateTime.now()).millisecondsSinceEpoch,
+          "limit": limit,
+        })
+        .then(
+          (response) => response.map((item) => FitData.fromJson(item)).toList(),
+        )
+        .catchError(
+          (_) => throw UnsupportedException(type),
+          test: (e) {
+            if (e is PlatformException) return e.code == 'unsupported';
+            return false;
+          },
+        );
   }
 
   static Future<FitData> readLast(DataType type) async {
@@ -86,4 +95,12 @@ enum DataType {
   SLEEP,
   STAND_TIME,
   EXERCISE_TIME
+}
+
+class UnsupportedException implements Exception {
+  final DataType dataType;
+  UnsupportedException(this.dataType);
+
+  @override
+  String toString() => 'UnsupportedException: dataType $dataType not supported';
 }
